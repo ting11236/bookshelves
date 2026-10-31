@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
+const {default:worker}=await import('data:text/javascript;base64,'+readFileSync('worker/index.js').toString('base64'));
+const origin='https://my-reading-atelier-2026.ting00236.chatgpt.site';
+let writes=0;const DB={prepare(sql){return {bind(){return this;},async all(){return {results:[]};},async first(){return sql.includes('count')?{count:0}:null;},async run(){writes++;return {};}};}};
+const env={OWNER_EMAIL:'owner@example.com',DB};
+function request(path,body,headers={}){return new Request(origin+path,{method:'POST',headers:{origin,'content-type':'application/json',...headers},body:JSON.stringify(body)});}
+const auth={'oai-authenticated-user-id':'owner','oai-authenticated-user-email':'owner@example.com'};
+assert.equal((await worker.fetch(request('/api/books',{}),env)).status,403);
+assert.equal((await worker.fetch(request('/api/books',{}, {...auth,origin:'https://attacker.example'}),env)).status,403);
+assert.equal((await worker.fetch(request('/api/books',{title:'test',author:'',cover:'javascript:alert(1)',readYear:2026},auth),env)).status,400);
+assert.equal((await worker.fetch(request('/api/books',{title:'test',author:'',cover:'',readYear:'2026'},auth),env)).status,400);
+assert.equal(writes,0);
+let response=await worker.fetch(request('/api/books',{title:'test',author:'',cover:'',readYear:2026},auth),env);assert.equal(response.status,201);assert.equal(writes,1);
+response=await worker.fetch(new Request(origin+'/api/library',{headers:{origin:'https://ting11236.github.io'}}),env);assert.equal(response.headers.get('access-control-allow-origin'),'https://ting11236.github.io');assert.equal(response.status,200);
+assert.equal((await (await worker.fetch(new Request(origin+'/api/session'),env)).json()).canEdit,false);
+assert.equal((await (await worker.fetch(new Request(origin+'/api/session',{headers:auth}),env)).json()).canEdit,true);
+console.log('Cloud authorization, validation, CORS and create checks passed.');
