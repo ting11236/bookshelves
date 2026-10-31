@@ -99,7 +99,7 @@ function openSourceNotes(){
  let dialog=el('sourceDialog');
  if(!dialog){dialog=document.createElement('dialog');dialog.id='sourceDialog';dialog.className='source-dialog';dialog.setAttribute('aria-labelledby','sourceDialogTitle');document.body.append(dialog);dialog.addEventListener('close',()=>sourceOpener?.focus());}
  const link=book.noteSource;
- dialog.innerHTML=`<header><div><p>原始閱讀筆記</p><h2 id="sourceDialogTitle">${escapeHTML(book.title)}</h2></div><button type="button" class="source-close" aria-label="關閉原始筆記" onclick="document.getElementById('sourceDialog').close()">×</button></header><div class="source-dialog-body"><p class="source-explain">依原文標題加入階層符號與縮排，內容保留原貌。</p>${link?`<a class="source-notion" href="${escapeHTML(link)}" target="_blank" rel="noopener">開啟 Notion 原文 ↗<span>${escapeHTML(link)}</span></a>`:''}<pre id="sourceExcerpt">正在載入原始筆記…</pre></div>`;
+ dialog.innerHTML=`<header><h2 id="sourceDialogTitle"><span class="source-heading-label">原始閱讀筆記</span><span class="source-heading-divider" aria-hidden="true">◇</span><span>${escapeHTML(book.title)}</span></h2><button type="button" class="source-close" aria-label="關閉原始筆記" onclick="document.getElementById('sourceDialog').close()">×</button></header><div class="source-dialog-body"><p class="source-explain">依原文標題加入階層符號與縮排，內容保留原貌。</p>${link?`<a class="source-notion" href="${escapeHTML(link)}" target="_blank" rel="noopener">開啟 Notion 原文 ↗<span>${escapeHTML(link)}</span></a>`:''}<pre id="sourceExcerpt">正在載入原始筆記…</pre></div>`;
  dialog.showModal();loadSourceExcerpt(getSections()[state.index]);
 }
 async function loadSourceExcerpt(item){
