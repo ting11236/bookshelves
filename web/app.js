@@ -72,15 +72,25 @@ function renderStory(item){
 }
 function goChapter(no){state.mode='chapters';state.index=readingBook.chapters.findIndex(x=>x.no===no);renderReader();}
 let sourceCache;
+const noteSourceCache = new Map();
 function sourcePanel(item){
  if(state.currentBook.sourceTextPath){setTimeout(()=>loadSourceExcerpt(item),0);return `<details class="source-panel"><summary>查看原始筆記</summary><p>來源：你的 Notion 筆記。依段落濃縮，未提供原書章次；整理者的示例解讀不等於原書完整案例。</p><pre id="sourceExcerpt">正在載入…</pre><a href="${escapeHTML(state.currentBook.noteSource)}" target="_blank" rel="noopener">開啟 Notion 原筆記 ↗</a></details>`;}
  setTimeout(()=>loadSourceExcerpt(item),0);
  return `<details class="source-panel"><summary>查看原始筆記與畫線</summary><p>N：個人讀書筆記；H：匯出畫線。整理者的串連與詮釋已另行標示。未核對原書全文。</p><pre id="sourceExcerpt">正在載入來源…</pre><a href="reading-sources.json" target="_blank" rel="noopener">開啟完整來源資料 ↗</a></details>`;
 }
 async function loadSourceExcerpt(item){
- const target=el('sourceExcerpt');
+ const target=el('sourceExcerpt'),book=state.currentBook;
+ if(book?.sourceTextPath){
+  const path=book.sourceTextPath;
+  try{
+   if(!noteSourceCache.has(path))noteSourceCache.set(path,fetch(path,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.text();}).catch(error=>{noteSourceCache.delete(path);throw error;}));
+   const text=await noteSourceCache.get(path);
+   if(target?.isConnected&&state.currentBook?.id===book.id)target.textContent=text;
+  }catch{if(target?.isConnected&&state.currentBook?.id===book.id)target.textContent='來源暫時無法載入，請使用下方 Notion 原筆記連結。';}
+  return;
+ }
  try{sourceCache ||= await fetch('reading-sources.json').then(r=>{if(!r.ok)throw Error();return r.json()});
- if(!target?.isConnected)return;
+ if(!target?.isConnected||state.currentBook?.id!==book?.id)return;
  const nos=item.chapters|| (item.no?[item.no]:[]);
  const chunks=sourceCache.highlights.split(/(?=^\d{1,2} .+\n2026\/)/m);
  const h=chunks.filter(x=>nos.includes(Number(x.match(/^(\d+) /)?.[1]))).join('\n');
