@@ -157,7 +157,8 @@ function openReader(){
   state.mode='themes';state.index=0; el('bookOverlay').hidden=true;el('readerLayer').hidden=false; lockScroll(true);
   el('readerBookTitle').textContent=state.currentBook.title;
   el('tocExplain').textContent=state.currentBook.featured?'用你畫下的段落，重新拼起這本書的思考脈絡。':'這本書目前只有收藏資訊，閱讀整理尚待加入。';
-  el('themeTab').innerHTML=state.currentBook.sourceTextPath?'主題整理':'<span>✳</span> 六大主題';el('storyTab').hidden=!(state.currentBook.stories?.length);
+  el('themeTab').innerHTML=state.currentBook.sourceTextPath?'讀書筆記':'<span>✳</span> 六大主題';el('storyTab').hidden=!(state.currentBook.stories?.length);
+  el('chapterTab').hidden=!!state.currentBook.sourceTextPath;
   el('chapterTab').innerHTML=state.currentBook.chaptersLabel||'<span>☷</span> 逐章濃縮';
   el('tocExplain').textContent=state.currentBook.sourceTextPath?'依你的筆記段落整理，未標原書章次。':el('tocExplain').textContent;
   renderReader();
@@ -176,7 +177,7 @@ function renderReader(){
   });
   toc.querySelector('.active')?.scrollIntoView({block:'nearest',inline:'nearest'});
   const total=sections.length; el('tocFooterCount').textContent=`${String(index+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`;
-  el('articleCategory').textContent=state.currentBook.sourceTextPath&&!isStory?(isThemes?'閱讀主題':'筆記段落'):isStory?`STORY ${String(index+1).padStart(2,'0')} · ${item.kind||''}`:isThemes?`PERSONAL THEME ${String(index+1).padStart(2,'0')}`:`CHAPTER ${item.no||String(index+1).padStart(2,'0')}`;
+  el('articleCategory').textContent=state.currentBook.sourceTextPath&&!isStory?(isThemes?'讀書筆記':'筆記段落'):isStory?`STORY ${String(index+1).padStart(2,'0')} · ${item.kind||''}`:isThemes?`PERSONAL THEME ${String(index+1).padStart(2,'0')}`:`CHAPTER ${item.no||String(index+1).padStart(2,'0')}`;
   el('articlePageNum').textContent=`${String(index+1).padStart(2,'0')} — ${String(total).padStart(2,'0')}`;
   el('pageIndicator').textContent=`${index+1} / ${total}`;
   el('prevPage').disabled=index===0; el('nextPage').disabled=index===total-1;
