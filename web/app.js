@@ -111,8 +111,9 @@ function fallbackCover(book){
 function updateCounts(){ const count=allBooks().length; el('headerCount').textContent=`已收藏 ${String(count).padStart(2,'0')} 本`; el('introCount').textContent=`目前收藏 ${count} 本書`;
  el('yearFilter').setAttribute('aria-pressed',String(state.yearOnly));
  el('yearFilter').classList.toggle('active',state.yearOnly);
- el('filterSummary').hidden=!state.yearOnly;
- el('filterSummary').textContent=`${currentReadingYear()} 年讀過 ${visibleBooks().length} 本 · 只顯示標記為今年閱讀的書`;
+ el('yearFilter').textContent=`今年閱讀 ${allBooks().filter(book=>readingYear(book)===currentReadingYear()).length} 本書`;
+ el('filterSummary').hidden=true;
+ el('filterSummary').textContent='';
  el('shelfEmpty').hidden=!(state.yearOnly&&visibleBooks().length===0); }
 function renderShelf(){
   const shelf=el('shelfBooks'); shelf.replaceChildren();
@@ -126,7 +127,7 @@ function renderShelf(){
     const author=document.createElement('span');author.className='shelf-book-author';author.textContent=book.author||'私人藏書';spine.append(author);
     const edge=document.createElement('span');edge.className='book-cover-edge';edge.setAttribute('aria-hidden','true');spine.append(edge);
     spine.dataset.bookId=book.id;spine.draggable=false;spine.dataset.canReorder=String(state.canEdit);spine.style.setProperty('--author-chars',String((book.author||'私人藏書').length));
-    for(const cls of ['spine-rule-top','spine-rule-bottom','book-page-top']){const face=document.createElement('span');face.className=cls;face.setAttribute('aria-hidden','true');spine.append(face);}
+    for(const cls of ['spine-rule-top','spine-rule-bottom','book-page-top','book-bottom-face']){const face=document.createElement('span');face.className=cls;face.setAttribute('aria-hidden','true');spine.append(face);}
     for(const cls of ['book-side-left','book-side-right']){const face=document.createElement('span');face.className=cls;face.setAttribute('aria-hidden','true');face.style.backgroundColor=book.accent||'#b5a081';if(book.cover){const image=document.createElement('img');image.alt='';image.src=book.cover;image.loading='lazy';image.onerror=()=>image.hidden=true;face.append(image);}spine.append(face);}
     spine.addEventListener('click',()=>{if(Date.now()<state.suppressedClick)return;openPullout(book);});
     if(state.canEdit)attachBookReorder(spine);shelf.append(spine);
@@ -244,7 +245,7 @@ function applyAccess(){
 async function loadCloud(){
  applyAccess();
  try{const [data,session,catalog]=await Promise.all([cloudRequest('/api/library'),cloudRequest('/api/session'),fetch('books/catalog.json').then(r=>{if(!r.ok)throw Error();return r.json();})]);
- state.extras=data.books.filter(book=>book.id!==readingBook.id).map(book=>{const notes=catalog.find(x=>x.id===book.id);return notes?{...book,...notes,cover:book.cover,readYear:book.readYear}:book;});state.order=Array.isArray(data.order)?data.order:[];state.readYears={};
+ state.extras=data.books.filter(book=>book.id!==readingBook.id).map(book=>{const notes=catalog.find(x=>x.id===book.id);return notes?{...book,...notes,cover:notes.cover||book.cover,readYear:book.readYear}:book;});state.order=Array.isArray(data.order)?data.order:[];state.readYears={};
  for(const book of data.books)if(Object.hasOwn(book,'readYear'))state.readYears[book.id]=book.readYear;
  state.canEdit=session.canEdit;state.cloudReady=true;renderShelf();applyAccess();
  }catch{showToast('雲端暫時無法連線，請重新整理後再試');}

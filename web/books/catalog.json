@@ -8,7 +8,7 @@
     "heightMm": 210,
     "thicknessMm": 18,
     "accent": "#e8e3d7",
-    "cover": "https://d4dpzjhk0g50s.cloudfront.net/images/b/BO0280.jpg",
+    "cover": "assets/relationship-cover.jpg",
     "description": "不安全感可能讓人越想靠近，越把珍惜的人推遠。周慕姿從愛情、家庭與自我關係出發，探討焦慮、控制、自我懷疑與情緒界線，並引導讀者練習理解感受、建立安全感與修復關係。",
     "synopsisSource": "https://www.cite.com.tw/book?id=75014",
     "sourceTextPath": "books/relationship-source.txt",
@@ -530,7 +530,8 @@
       }
     ],
     "stories": [],
-    "description": ""
+    "description": "",
+    "cover": "assets/empire-cover.jpg"
   },
   {
     "id": "2afd8f99-60ec-4d6f-b01c-221d1731ad92",
@@ -748,7 +749,8 @@
       }
     ],
     "stories": [],
-    "description": ""
+    "description": "",
+    "cover": "assets/economy-cover.jpg"
   },
   {
     "id": "fcafc344-a00e-4fb4-91dd-e6c24c5c42b9",
