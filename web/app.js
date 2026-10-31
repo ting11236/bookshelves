@@ -267,7 +267,7 @@ loadCloud();
 let draggedBook=null,touchDrag=null;
 function updateBookPerspective(){
  const shelf=el('shelfBooks'),buttons=[...shelf.querySelectorAll('.shelf-book')];if(!buttons.length)return;
- const box=shelf.getBoundingClientRect(),center=box.left+box.width/2;
+ const box=shelf.closest('.shelf-scene').getBoundingClientRect(),center=box.left+box.width/2;
  for(const book of buttons){const r=book.getBoundingClientRect();const normalized=Math.max(-1,Math.min(1,(r.left+r.width/2-center)/Math.max(1,box.width/2)));book.style.setProperty('--book-yaw',(normalized*14)+'deg');book.style.setProperty('--page-opacity',String(.8-Math.abs(normalized)*.5));}
 }
 function moveBookBeforePoint(book,x,y){
