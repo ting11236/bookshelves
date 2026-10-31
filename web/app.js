@@ -10,7 +10,8 @@ const readingBook = {
   cover: 'assets/book-cover.jpg',
   accent: '#e5c642',
   featured: true,
-  description: '有些書讀完後，故事才真正開始。在這裡，翻閱六大主題、逐章濃縮與故事卡片，串起人物、轉折與你的細微領悟。',
+  description: '心理師蘿蕊・葛利布在自己的人生陷入危機後，也走進心理師溫德爾的診間。她一面陪伴來談者面對關係、疾病、失落與人生困境，一面重新理解自己的痛苦與盲點。書中交織她作為心理師與求助者的經歷，以坦率而幽默的故事，探索人如何認識自己、建立連結，並把領悟化為生活中的改變。',
+  synopsisSource:'https://www.cite.com.tw/book?id=96913',
   themes: [
     { title:'接受人生的不確定性', chapters:[12,37,41,52], lead:'人生不會總按原本的計畫前進。能接住失落，也能容許未知，才有空間看見另一種可能。', points:['「歡迎蒞臨荷蘭」的比喻提醒我們：沒有抵達預期的地方，不等於旅程毫無價值；失落也不必被否認。','人對死亡、孤獨、自由和無意義的焦慮，常使我們試圖控制無法控制的事。','熟悉的痛苦有時比陌生的快樂更令人安心；承認脆弱，可能是走向改變的起點。'], insight:'第 12 章的「預期落空」、第 37 章的「不確定」與第 52 章的「與無可奈何共處」，構成一條從失望走向接納的線索。' },
     { title:'理解情緒，而不是逃避情緒', chapters:[24,33,36,45,48], lead:'情緒不是需要被立即消除的障礙；有時它是一種訊息，提示我們真正重視與害怕的是什麼。', points:['有些人難以辨認或描述感受；若從小習慣忽視情緒，成年後可能更難聽見自己的內在。','壓抑感受不等於感受好。悲傷、焦慮和失落若總被擋在外面，也可能隔絕喜悅與連結。','過度求快，使人急著「解決」情緒，卻失去理解問題的時間和空間。'], insight:'從第 33 章的情緒辨識，到第 45 章的情緒麻木，再到第 48 章的悲傷經驗，你的劃線反覆回到「容許感受存在」這個主題。' },
@@ -143,11 +144,13 @@ function renderShelf(){
 function lockScroll(isLocked){document.body.style.overflow=isLocked?'hidden':'';}
 function openPullout(book){
   state.currentBook=book; el('readYearForm').hidden=!state.canEdit; el('bookReadYear').value=readingYear(book)||''; el('pulledTitle').textContent=book.title; el('pulledAuthor').textContent=book.author||'私人藏書';
-  el('pulledDesc').textContent=book.featured?book.description:'這本書已經收藏到你的書櫃。等你匯入劃線與筆記，就能為它建立個人閱讀大綱。';
+  const intro=typeof book.description==='string'?book.description.trim():'';
+  el('pulledDesc').textContent=intro;el('pulledDesc').hidden=!intro;
+  el('pulloutDivider').hidden=!intro;
+  const source=el('pulledIntroSource');let sourceUrl='';
+  try{const url=new URL(book.synopsisSource);if(['https:','http:'].includes(url.protocol))sourceUrl=url.href;}catch{}
+  source.hidden=!(intro&&sourceUrl);if(sourceUrl)source.href=sourceUrl;
   el('pulledCover').src=book.cover||fallbackCover(book); el('pulledCover').onerror=()=>{el('pulledCover').onerror=null;el('pulledCover').src=fallbackCover(book);};
-  const facts=el('pulloutFacts');facts.replaceChildren();
-  const labels=book.featured?['06 個主題',`${readingBook.chapters.length-1} 章＋前半段補充`,`${readingBook.stories.length} 張故事卡`,'16 × 22.5 cm']:['已收藏','摘要待整理','私人書櫃'];
-  labels.forEach(text=>{let span=document.createElement('span');span.textContent=text;facts.append(span)});
   el('openReaderButton').innerHTML=book.featured?'翻開這本書 <span aria-hidden="true">↗</span>':'查看書籍檔案 <span aria-hidden="true">↗</span>';
   el('bookOverlay').hidden=false;lockScroll(true);
 }

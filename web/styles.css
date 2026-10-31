@@ -58,3 +58,5 @@ body{background:#f6f5f0;color:#30332d}.ambient-grain{background:radial-gradient(
 @media(max-width:620px){.library-section{--spine-scale:.6;width:calc(100% - 20px);margin:35px auto 65px}.site-header{min-height:105px;padding:17px 17px 14px;gap:14px}.brand{font-size:18px}.top-actions{gap:9px}.year-filter{padding:8px 10px}.header-add{padding:8px 10px}.filter-summary{padding:7px 17px;font-size:9px}.scene-one{height:196px}.shelf-inner{padding-left:16px;padding-right:16px}.shelf-books{padding-top:16px;max-width:calc(100% - 65px)}.empty-book-slot{height:105px;width:36px;margin-left:10px}.shelf-bookend{height:85px}.wood-shelf{height:20px}}
 
 .manage-link{text-decoration:none;display:inline-block}.top-actions{align-items:center}.year-filter:disabled{opacity:.5}
+
+.intro-source{display:inline-block;font:10px var(--sans);color:#929982;margin:12px 0 8px;text-underline-offset:3px}.pullout-desc{font-size:13px;line-height:1.95}
