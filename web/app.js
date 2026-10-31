@@ -73,10 +73,34 @@ function renderStory(item){
 function goChapter(no){state.mode='chapters';state.index=readingBook.chapters.findIndex(x=>x.no===no);renderReader();}
 let sourceCache;
 const noteSourceCache = new Map();
+
+const sourceMajorHeadings = new Set('依附與愛情|父母與教養（家庭）|自我責備與自我撫慰|自戀型人格障礙|表演型人格障礙|偏執型人格障礙|需求清單|坦然：建立長久關係的不敗秘訣|關係中的權力運作|債務種類|金融危機歷史|近100年金融危機|大規模債務違約事件|金融危機的發生&後遺症|奴隸貿易活動|奴隸運送過程的居住環境|奴隸船組成|現代的奴隸：|前言|兩個系統|捷徑與偏見|過度自信|選擇|兩個自我|動物本能|2008次級房貸風暴|股價&債市|經濟|經濟的問題＆未來隱憂|基本概念|日本|美國|中國|俄國|英國|歐盟|東南亞|中東|新興權力-網路權、太空權？|行銷是什麼|基礎概念|價值的來源|了解顧客|行銷階段|品牌管理|練習|前言：思考到實踐的5個核心|人為什麼窮？|爛債人生|夢想與財務|分類財富：四桶金|檢視財務現況|總結|解開枷鎖|設定角色|讓角色採取行動|打造適合角色的環境|推動故事發展'.split('|'));
+const sourceSubHeadings = new Set('六大親密恐懼|關係|［焦慮+逃避］的功課|共同功課|好人的情緒界線很模糊|不安全感怎麼影響家庭|你以為的，不是你以為|自我情緒界限建立：停看應|停止自我懲罰|「趕快好起來」的謬誤|因為「未知」，所以「焦慮」|特徵|性格|與他們相處的感受|與他相處的感受|哪些人容易被吸引|如何擺脫|魅力點|特色|如何發生|危機前中後的市場表現|後遺症|如果發生高通膨|系統1&2|系統一總結|注意力和努力|心智與身體的連結|認知放鬆|常模理論|驟下結論|信念的偏見|心智發散性|各種傾向|恐懼與陶醉|風險趨避|時間偏好|羊群行為|依賴傾向與競爭欲望|傾向的交互作用|價值準則|樂觀偏誤|利己|經濟衰退的類型|經濟的真相|非農勞工工時產出|各國不同的文化|全球化|財政赤字|大到不能倒的企業|裙帶資本主義|緩衝資源日益耗損|政治分裂|陸權-希望出海|海權-希望阻止陸權擴張|邊緣地帶容易發生衝突|海權國家的咽喉點|如何維持世界和平-維持權力平衡|自由開放的印太平洋|如何成為世界最強國|一帶一路|印度|泰國、越南、菲律賓|WHO？|WHAT？|調查分析|策略：STP|戰術：行銷4P（1C）|執行、管理和回顧|訪談、觀察|0→1：找到第一個顧客|1→10：初期成長|10→1000：規模最大化|原理|怎麼做|創建夢想倉庫|創建夢想倉庫：五步驟|回推現實：可能嗎？|跳脫困乏者思維|有效率&有意義的「節流」|系統性的「開源」|進攻型資金|樂透型資金|3. 了解負債|4. 收入策略|探索自己的財富因子|被動收入|穩定獲利心法|風險評估（質）|風險評估（量）|對的配置|拆解財務目標|盤點現況|評估差距|具體行動|提升解析度|認識自己|融入自己期望的環境|找出自己的有利狀態|成為其中一員|擬定行動計劃|解除推動過程中的不安|區分判斷和決定|風險管理'.split('|'));
+function formatOriginalNotes(text){
+ let sub=false,first=true;
+ return text.split(/\r?\n/).map(line=>{
+  const value=line.trim();if(!value)return '';
+  if(first){first=false;return value;}
+  if(value==='//'||/^【.+】$/.test(value))return '\n'+value+'\n';
+  if(sourceMajorHeadings.has(value)){sub=false;return '\n■ '+value;}
+  if(sourceSubHeadings.has(value)||value.length<32&&/[：:]$/.test(value)){sub=true;return '\n  ◆ '+value;}
+  if(/^[💡🤑🗯️💰🌏]+$/u.test(value))return '\n'+value;
+  const indent=line.match(/^\s*/)[0].replace(/\t/g,'  ').length;
+  return (sub?'    ':'  ')+(indent>=2?'  ◦ ':'• ')+value.replace(/^[-•]\s+/, '');
+ }).join('\n').replace(/\n{3,}/g,'\n\n');
+}
+
 function sourcePanel(item){
- if(state.currentBook.sourceTextPath){setTimeout(()=>loadSourceExcerpt(item),0);return `<details class="source-panel"><summary>查看原始筆記</summary><p>來源：你的 Notion 筆記。依段落濃縮，未提供原書章次；整理者的示例解讀不等於原書完整案例。</p><pre id="sourceExcerpt">正在載入…</pre><a href="${escapeHTML(state.currentBook.noteSource)}" target="_blank" rel="noopener">開啟 Notion 原筆記 ↗</a></details>`;}
- setTimeout(()=>loadSourceExcerpt(item),0);
- return `<details class="source-panel"><summary>查看原始筆記與畫線</summary><p>N：個人讀書筆記；H：匯出畫線。整理者的串連與詮釋已另行標示。未核對原書全文。</p><pre id="sourceExcerpt">正在載入來源…</pre><a href="reading-sources.json" target="_blank" rel="noopener">開啟完整來源資料 ↗</a></details>`;
+ return `<div class="source-panel"><button class="source-open-button" type="button" onclick="openSourceNotes()">查看原始筆記 ↗</button></div>`;
+}
+let sourceOpener;
+function openSourceNotes(){
+ const book=state.currentBook;if(!book)return;sourceOpener=document.activeElement;
+ let dialog=el('sourceDialog');
+ if(!dialog){dialog=document.createElement('dialog');dialog.id='sourceDialog';dialog.className='source-dialog';dialog.setAttribute('aria-labelledby','sourceDialogTitle');document.body.append(dialog);dialog.addEventListener('close',()=>sourceOpener?.focus());}
+ const link=book.noteSource;
+ dialog.innerHTML=`<header><div><p>原始閱讀筆記</p><h2 id="sourceDialogTitle">${escapeHTML(book.title)}</h2></div><button type="button" class="source-close" aria-label="關閉原始筆記" onclick="document.getElementById('sourceDialog').close()">×</button></header><div class="source-dialog-body"><p class="source-explain">依原文標題加入階層符號與縮排，內容保留原貌。</p>${link?`<a class="source-notion" href="${escapeHTML(link)}" target="_blank" rel="noopener">開啟 Notion 原文 ↗<span>${escapeHTML(link)}</span></a>`:''}<pre id="sourceExcerpt">正在載入原始筆記…</pre></div>`;
+ dialog.showModal();loadSourceExcerpt(getSections()[state.index]);
 }
 async function loadSourceExcerpt(item){
  const target=el('sourceExcerpt'),book=state.currentBook;
@@ -85,7 +109,7 @@ async function loadSourceExcerpt(item){
   try{
    if(!noteSourceCache.has(path))noteSourceCache.set(path,fetch(path,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.text();}).catch(error=>{noteSourceCache.delete(path);throw error;}));
    const text=await noteSourceCache.get(path);
-   if(target?.isConnected&&state.currentBook?.id===book.id)target.textContent=text;
+   if(target?.isConnected&&state.currentBook?.id===book.id)target.textContent=formatOriginalNotes(text);
   }catch{if(target?.isConnected&&state.currentBook?.id===book.id)target.textContent='來源暫時無法載入，請使用下方 Notion 原筆記連結。';}
   return;
  }
@@ -96,6 +120,7 @@ async function loadSourceExcerpt(item){
  const h=chunks.filter(x=>nos.includes(Number(x.match(/^(\d+) /)?.[1]))).join('\n');
  const showNotes=state.mode==='themes'||item.source?.includes('N');
  target.textContent=(showNotes?'【N｜個人筆記原文；章號僅以原始標題為準】\n'+sourceCache.notes+'\n\n':'')+(h?'【H｜相關章節畫線】\n'+h:'');
+ target.textContent=formatOriginalNotes(target.textContent);
  if(!target.textContent)target.textContent='本項完整畫線請見下方來源資料。';
  }catch{if(target)target.textContent='來源暫時無法載入，請使用下方完整來源連結。';}
 }
@@ -233,6 +258,7 @@ function bindEvents(){
   el('fontUp').addEventListener('click',()=>{state.font=Math.min(21,state.font+1);document.documentElement.style.setProperty('--reading-size',state.font+'px');});
   el('addBookForm').addEventListener('submit',submitBook);
   document.addEventListener('keydown',event=>{
+    if(el('sourceDialog')?.open)return;
     if(event.key==='Escape'){if(!el('readerLayer').hidden)closeReader();else if(!el('bookOverlay').hidden)closePullout();else if(!el('addOverlay').hidden)closeUtility('add');else if(!el('aboutOverlay').hidden)closeUtility('about');}
     if(!el('readerLayer').hidden&&event.key==='ArrowRight')setPage(state.index+1);
     if(!el('readerLayer').hidden&&event.key==='ArrowLeft')setPage(state.index-1);
