@@ -73,6 +73,7 @@ function renderStory(item){
 function goChapter(no){state.mode='chapters';state.index=readingBook.chapters.findIndex(x=>x.no===no);renderReader();}
 let sourceCache;
 function sourcePanel(item){
+ if(state.currentBook.sourceTextPath){setTimeout(()=>loadSourceExcerpt(item),0);return `<details class="source-panel"><summary>查看原始筆記</summary><p>來源：你的 Notion 筆記。依段落濃縮，未提供原書章次；整理者的示例解讀不等於原書完整案例。</p><pre id="sourceExcerpt">正在載入…</pre><a href="${escapeHTML(state.currentBook.noteSource)}" target="_blank" rel="noopener">開啟 Notion 原筆記 ↗</a></details>`;}
  setTimeout(()=>loadSourceExcerpt(item),0);
  return `<details class="source-panel"><summary>查看原始筆記與畫線</summary><p>N：個人讀書筆記；H：匯出畫線。整理者的串連與詮釋已另行標示。未核對原書全文。</p><pre id="sourceExcerpt">正在載入來源…</pre><a href="reading-sources.json" target="_blank" rel="noopener">開啟完整來源資料 ↗</a></details>`;
 }
@@ -90,7 +91,7 @@ async function loadSourceExcerpt(item){
 }
 
 const el = id => document.getElementById(id);
-const state = { currentBook:null, mode:'themes', index:0, extras:[], font:16, yearOnly:false, readYears:{}, canEdit:false, cloudReady:false };
+const state = { currentBook:null, mode:'themes', index:0, extras:[], font:16, yearOnly:false, readYears:{}, canEdit:false, cloudReady:false, order:[], suppressedClick:0 };
 const storeKey = 'quiet-shelf-books-v1';
 const accentColors = ['#b78d70','#90a7a4','#a596b3','#c3aa76','#bd8d7c','#8da18a'];
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -101,16 +102,7 @@ function currentReadingYear(){return Number(new Intl.DateTimeFormat('en',{year:'
 function readingYear(book){return Object.hasOwn(state.readYears,book.id)?state.readYears[book.id]:book.readYear||null;}
 function visibleBooks(){return allBooks().filter(book=>!state.yearOnly||readingYear(book)===currentReadingYear());}
 function loadReadingYears(){try{const data=JSON.parse(localStorage.getItem('quiet-shelf-reading-years-v1')||'{}');state.readYears=data&&typeof data==='object'&&!Array.isArray(data)?data:{};}catch{state.readYears={};}}
-async function saveReadingYear(event){
- event.preventDefault();const book=state.currentBook;if(!book||!state.canEdit)return;
- if(!el('bookReadYear').reportValidity())return;
- const raw=el('bookReadYear').value,year=raw?Number(raw):null;
- const btn=event.submitter; if(btn)btn.disabled=true;
- try{await cloudRequest('/api/books/'+encodeURIComponent(book.id)+'/year',{method:'PUT',body:JSON.stringify({readYear:year})});state.readYears[book.id]=year;renderShelf();showToast('閱讀年份已同步到雲端');}
- catch(error){showToast(error.message);}
- finally{if(btn)btn.disabled=false;}
-}
-function allBooks(){ return [readingBook,...state.extras]; }
+function allBooks(){ const books=[readingBook,...state.extras];const rank=new Map(state.order.map((id,i)=>[id,i]));return books.sort((a,b)=>(rank.get(a.id)??1e6)-(rank.get(b.id)??1e6)); }
 function fallbackCover(book){
   const lines = (book.title||'讀過的書').match(/.{1,7}/gu)?.slice(0,4) || ['讀過的書'];
   const titleLines = lines.map((line,i)=>`<text x="150" y="${128+i*45}" font-size="27" font-family="serif" text-anchor="middle" fill="#f5e5c9">${escapeHTML(line)}</text>`).join('');
@@ -120,36 +112,36 @@ function updateCounts(){ const count=allBooks().length; el('headerCount').textCo
  el('yearFilter').setAttribute('aria-pressed',String(state.yearOnly));
  el('yearFilter').classList.toggle('active',state.yearOnly);
  el('filterSummary').hidden=!state.yearOnly;
- el('filterSummary').textContent=`${currentReadingYear()} 年讀過 ${visibleBooks().length} 本 · 尚未記錄閱讀年份的書不列入`;
+ el('filterSummary').textContent=`${currentReadingYear()} 年讀過 ${visibleBooks().length} 本 · 只顯示標記為今年閱讀的書`;
  el('shelfEmpty').hidden=!(state.yearOnly&&visibleBooks().length===0); }
 function renderShelf(){
   const shelf=el('shelfBooks'); shelf.replaceChildren();
   visibleBooks().forEach((book,i)=>{
-    const spine=document.createElement('button'); spine.className='shelf-book'+(book.featured?' featured-spine':'');
+    const spine=document.createElement('button'); spine.className='shelf-book'+(book.id===readingBook.id?' featured-spine':'');
     spine.style.setProperty('--book-accent',book.accent||accentColors[i%accentColors.length]);
     spine.style.setProperty('--book-height',`${(book.heightMm||210)*1.25}px`);
     spine.style.setProperty('--book-width',`${(book.thicknessMm||27)*1.25}px`);
     spine.setAttribute('aria-label',`抽出《${book.title}》`); spine.title=`抽出《${book.title}》`;
-    const title=document.createElement('span');title.className='shelf-book-title'; title.textContent=book.title;spine.append(title);
+    const title=document.createElement('span');title.className='shelf-book-title'; title.textContent=book.spineTitle||book.title;spine.append(title);
     const author=document.createElement('span');author.className='shelf-book-author';author.textContent=book.author||'私人藏書';spine.append(author);
-    if(book.featured){
-      const english=document.createElement('span');english.className='spine-english';english.textContent='MAYBE YOU SHOULD TALK TO SOMEONE';spine.append(english);
-      const publisher=document.createElement('span');publisher.className='spine-publisher';publisher.textContent='行路';spine.append(publisher);
-    }
     const edge=document.createElement('span');edge.className='book-cover-edge';edge.setAttribute('aria-hidden','true');spine.append(edge);
-    spine.addEventListener('click',()=>openPullout(book)); shelf.append(spine);
+    spine.dataset.bookId=book.id;spine.draggable=state.canEdit;spine.style.setProperty('--author-chars',String((book.author||'私人藏書').length));
+    for(const cls of ['spine-rule-top','spine-rule-bottom','book-page-top']){const face=document.createElement('span');face.className=cls;face.setAttribute('aria-hidden','true');spine.append(face);}
+    for(const cls of ['book-side-left','book-side-right']){const face=document.createElement('span');face.className=cls;face.setAttribute('aria-hidden','true');face.style.backgroundColor=book.accent||'#b5a081';if(book.cover){const image=document.createElement('img');image.alt='';image.src=book.cover;image.loading='lazy';image.onerror=()=>image.hidden=true;face.append(image);}spine.append(face);}
+    spine.addEventListener('click',()=>{if(Date.now()<state.suppressedClick)return;openPullout(book);});
+    if(state.canEdit)attachBookReorder(spine);shelf.append(spine);
   });
-  updateCounts();
+  updateCounts();requestAnimationFrame(updateBookPerspective);
 }
 function lockScroll(isLocked){document.body.style.overflow=isLocked?'hidden':'';}
 function openPullout(book){
-  state.currentBook=book; el('readYearForm').hidden=!state.canEdit; el('bookReadYear').value=readingYear(book)||''; el('pulledTitle').textContent=book.title; el('pulledAuthor').textContent=book.author||'私人藏書';
+  state.currentBook=book; el('pulledTitle').textContent=book.title; el('pulledAuthor').textContent=book.author||'私人藏書';el('pulledEnglishTitle').textContent=book.id===readingBook.id?'Maybe You Should Talk to Someone':book.englishTitle||'';el('pulledEnglishAuthor').textContent=book.id===readingBook.id?'Lori Gottlieb':book.englishAuthor||'';
   const intro=typeof book.description==='string'?book.description.trim():'';
   el('pulledDesc').textContent=intro;el('pulledDesc').hidden=!intro;
   el('pulloutDivider').hidden=!intro;
   const source=el('pulledIntroSource');let sourceUrl='';
   try{const url=new URL(book.synopsisSource);if(['https:','http:'].includes(url.protocol))sourceUrl=url.href;}catch{}
-  source.hidden=!(intro&&sourceUrl);if(sourceUrl)source.href=sourceUrl;
+  source.hidden=true;if(sourceUrl)source.href=sourceUrl;
   el('pulledCover').src=book.cover||fallbackCover(book); el('pulledCover').onerror=()=>{el('pulledCover').onerror=null;el('pulledCover').src=fallbackCover(book);};
   el('openReaderButton').innerHTML=book.featured?'翻開這本書 <span aria-hidden="true">↗</span>':'查看書籍檔案 <span aria-hidden="true">↗</span>';
   el('bookOverlay').hidden=false;lockScroll(true);
@@ -164,6 +156,9 @@ function openReader(){
   state.mode='themes';state.index=0; el('bookOverlay').hidden=true;el('readerLayer').hidden=false; lockScroll(true);
   el('readerBookTitle').textContent=state.currentBook.title;
   el('tocExplain').textContent=state.currentBook.featured?'用你畫下的段落，重新拼起這本書的思考脈絡。':'這本書目前只有收藏資訊，閱讀整理尚待加入。';
+  el('themeTab').innerHTML=state.currentBook.sourceTextPath?'主題整理':'<span>✳</span> 六大主題';el('storyTab').hidden=!(state.currentBook.stories?.length);
+  el('chapterTab').innerHTML=state.currentBook.chaptersLabel||'<span>☷</span> 逐章濃縮';
+  el('tocExplain').textContent=state.currentBook.sourceTextPath?'依你的筆記段落整理，未標原書章次。':el('tocExplain').textContent;
   renderReader();
 }
 function closeReader(){el('readerLayer').hidden=true;state.currentBook=null;lockScroll(false);}
@@ -180,7 +175,7 @@ function renderReader(){
   });
   toc.querySelector('.active')?.scrollIntoView({block:'nearest',inline:'nearest'});
   const total=sections.length; el('tocFooterCount').textContent=`${String(index+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`;
-  el('articleCategory').textContent=isStory?`STORY ${String(index+1).padStart(2,'0')} · ${item.kind||''}`:isThemes?`PERSONAL THEME ${String(index+1).padStart(2,'0')}`:`CHAPTER ${item.no||String(index+1).padStart(2,'0')}`;
+  el('articleCategory').textContent=state.currentBook.sourceTextPath&&!isStory?(isThemes?'閱讀主題':'筆記段落'):isStory?`STORY ${String(index+1).padStart(2,'0')} · ${item.kind||''}`:isThemes?`PERSONAL THEME ${String(index+1).padStart(2,'0')}`:`CHAPTER ${item.no||String(index+1).padStart(2,'0')}`;
   el('articlePageNum').textContent=`${String(index+1).padStart(2,'0')} — ${String(total).padStart(2,'0')}`;
   el('pageIndicator').textContent=`${index+1} / ${total}`;
   el('prevPage').disabled=index===0; el('nextPage').disabled=index===total-1;
@@ -200,7 +195,7 @@ async function submitBook(event){
  const title=el('newTitle').value.trim();if(!title)return;
  if(allBooks().some(book=>book.title===title)){showToast('這本書已經在書櫃裡囉');return;}
  const btn=event.submitter;if(btn)btn.disabled=true;
- const payload={title,author:el('newAuthor').value.trim(),cover:el('newCover').value.trim(),readYear:el('newReadYear').value?Number(el('newReadYear').value):null};
+ const payload={title,author:el('newAuthor').value.trim(),cover:el('newCover').value.trim(),readYear:null};
  try{const result=await cloudRequest('/api/books',{method:'POST',body:JSON.stringify(payload)});state.extras.push(result.book);renderShelf();el('addBookForm').reset();closeUtility('add');showToast('已收藏到雲端書櫃');}
  catch(error){showToast(error.message);}
  finally{if(btn)btn.disabled=false;}
@@ -208,7 +203,6 @@ async function submitBook(event){
 function bindEvents(){
   el('importLocal').addEventListener('click',importLocalBooks);
   el('yearFilter').addEventListener('click',()=>{state.yearOnly=!state.yearOnly;renderShelf();});
-  el('readYearForm').addEventListener('submit',saveReadingYear);
   el('homeLink').addEventListener('click',event=>{event.preventDefault();window.scrollTo({top:0,behavior:'smooth'});});
   el('headerAddButton').addEventListener('click',()=>openUtility('add'));
   el('addBookSlot').addEventListener('click',()=>openUtility('add'));
@@ -244,14 +238,13 @@ async function cloudRequest(path,options={}){
 }
 function applyAccess(){
  el('headerAddButton').hidden=!state.canEdit;el('addBookSlot').hidden=!state.canEdit;el('manageLink').hidden=state.canEdit;
- el('readYearForm').hidden=!state.canEdit;
  let local=[];try{local=JSON.parse(localStorage.getItem(storeKey)||'[]');}catch{}
  el('importLocal').hidden=!(state.canEdit&&Array.isArray(local)&&local.length);
 }
 async function loadCloud(){
  applyAccess();
- try{const [data,session]=await Promise.all([cloudRequest('/api/library'),cloudRequest('/api/session')]);
- state.extras=data.books.filter(book=>book.id!==readingBook.id);state.readYears={};
+ try{const [data,session,catalog]=await Promise.all([cloudRequest('/api/library'),cloudRequest('/api/session'),fetch('books/catalog.json').then(r=>{if(!r.ok)throw Error();return r.json();})]);
+ state.extras=data.books.filter(book=>book.id!==readingBook.id).map(book=>{const notes=catalog.find(x=>x.id===book.id);return notes?{...book,...notes,cover:book.cover,readYear:book.readYear}:book;});state.order=Array.isArray(data.order)?data.order:[];state.readYears={};
  for(const book of data.books)if(Object.hasOwn(book,'readYear'))state.readYears[book.id]=book.readYear;
  state.canEdit=session.canEdit;state.cloudReady=true;renderShelf();applyAccess();
  }catch{showToast('雲端暫時無法連線，請重新整理後再試');}
@@ -268,3 +261,32 @@ window.addEventListener('pageshow',()=>{if(state.cloudReady)loadCloud();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.cloudReady&&el('bookOverlay').hidden&&el('addOverlay').hidden)loadCloud();});
 
 loadCloud();
+
+let draggedBook=null,touchDrag=null;
+function updateBookPerspective(){
+ const shelf=el('shelfBooks'),buttons=[...shelf.querySelectorAll('.shelf-book')];if(!buttons.length)return;
+ const box=shelf.getBoundingClientRect(),center=box.left+box.width/2;
+ for(const book of buttons){const r=book.getBoundingClientRect();const normalized=Math.max(-1,Math.min(1,(r.left+r.width/2-center)/Math.max(1,box.width/2)));book.style.setProperty('--book-yaw',(normalized*14)+'deg');book.style.setProperty('--page-opacity',String(.8-Math.abs(normalized)*.5));}
+}
+function moveBookBeforePoint(book,x,y){
+ const target=document.elementFromPoint(x,y)?.closest('.shelf-book');if(!target||target===book||target.parentElement!==book.parentElement)return;
+ const rect=target.getBoundingClientRect();target.parentElement.insertBefore(book,x<rect.left+rect.width/2?target:target.nextSibling);updateBookPerspective();
+}
+async function persistBookOrder(){
+ const ids=[...el('shelfBooks').querySelectorAll('.shelf-book')].map(x=>x.dataset.bookId);const visible=new Set(ids);let i=0;const order=allBooks().map(book=>visible.has(book.id)?ids[i++]:book.id);state.suppressedClick=Date.now()+600;
+ try{await cloudRequest('/api/order',{method:'PUT',body:JSON.stringify({order})});state.order=order;showToast('書籍排列已同步到雲端');}
+ catch(error){showToast(error.message);await loadCloud();}
+}
+function attachBookReorder(book){
+ book.title+=' · 拖曳調整位置';
+ book.addEventListener('dragstart',event=>{draggedBook=book;book.classList.add('is-dragging');event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',book.dataset.bookId);});
+ book.addEventListener('dragover',event=>{if(!draggedBook)return;event.preventDefault();event.dataTransfer.dropEffect='move';moveBookBeforePoint(draggedBook,event.clientX,event.clientY);});
+ book.addEventListener('drop',event=>{if(!draggedBook)return;event.preventDefault();draggedBook.classList.remove('is-dragging');draggedBook=null;persistBookOrder();});
+ book.addEventListener('dragend',()=>{book.classList.remove('is-dragging');draggedBook=null;});
+ book.addEventListener('pointerdown',event=>{if(event.pointerType!=='touch')return;const entry={book,x:event.clientX,y:event.clientY,active:false};entry.timer=setTimeout(()=>{entry.active=true;book.classList.add('is-dragging');book.setPointerCapture(event.pointerId);state.suppressedClick=Date.now()+10000;},260);touchDrag=entry;});
+ book.addEventListener('pointermove',event=>{const drag=touchDrag;if(!drag||drag.book!==book)return;if(!drag.active){if(Math.abs(event.clientX-drag.x)+Math.abs(event.clientY-drag.y)>12){clearTimeout(drag.timer);touchDrag=null;}return;}event.preventDefault();moveBookBeforePoint(book,event.clientX,event.clientY);});
+ book.addEventListener('pointerup',()=>{if(!touchDrag)return;clearTimeout(touchDrag.timer);const active=touchDrag.active;touchDrag=null;book.classList.remove('is-dragging');if(active)persistBookOrder();});
+ book.addEventListener('pointercancel',()=>{if(touchDrag)clearTimeout(touchDrag.timer);touchDrag=null;book.classList.remove('is-dragging');state.suppressedClick=Date.now()+500;renderShelf();});
+ book.addEventListener('keydown',event=>{if(!event.altKey||!['ArrowLeft','ArrowRight'].includes(event.key))return;event.preventDefault();const sibling=event.key==='ArrowLeft'?book.previousElementSibling:book.nextElementSibling;if(!sibling)return;book.parentElement.insertBefore(book,event.key==='ArrowLeft'?sibling:sibling.nextSibling);persistBookOrder();book.focus();updateBookPerspective();});
+}
+window.addEventListener('resize',updateBookPerspective);

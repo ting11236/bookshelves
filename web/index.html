@@ -19,7 +19,7 @@
       <a href="#" class="brand" id="homeLink" aria-label="回到書櫃首頁">
         <span id="introCount" aria-live="polite">目前收藏 1 本書</span></a>
       <nav class="top-actions" aria-label="書房功能">
-        <a id="manageLink" class="year-filter manage-link" target="_top" href="https://my-reading-atelier-2026.ting00236.chatgpt.site/signin-with-chatgpt?return_to=%2F">管理登入</a><button id="yearFilter" class="year-filter" type="button" aria-pressed="false">只看今年讀的</button><span class="header-count" id="headerCount" hidden>已收藏 01 本</span>
+        <a id="manageLink" class="year-filter manage-link" target="_top" href="https://my-reading-atelier-2026.ting00236.chatgpt.site/signin-with-chatgpt?return_to=%2F">管理登入</a><button id="yearFilter" class="year-filter" type="button" aria-pressed="false">今年閱讀</button><span class="header-count" id="headerCount" hidden>已收藏 01 本</span>
         <button id="importLocal" class="year-filter" type="button" hidden>匯入此裝置藏書</button><button class="icon-button" id="aboutButton" aria-label="關於這個書房" title="關於這個書房">?</button>
         <button class="button button-outline header-add" id="headerAddButton"><span class="plus-glyph">＋</span> 新增書籍</button>
       </nav>
@@ -34,7 +34,7 @@
             <div class="shelf-inner">
               <div class="shelf-books" id="shelfBooks" aria-label="已收藏的書"></div><p id="shelfEmpty" class="shelf-empty" hidden>今年還沒有記錄讀過的書。<br>可在書籍檔案填寫閱讀年份。</p>
               <button class="empty-book-slot" id="addBookSlot" aria-label="新增一本讀過的書"><span class="slot-plus">+</span><span class="slot-text">下一本書</span></button>
-              <div class="shelf-bookend" aria-hidden="true"></div>
+              
             </div>
           </div>
           <div class="wood-shelf" aria-hidden="true"><span class="shelf-gold-line"></span></div>
@@ -53,15 +53,13 @@
       <div class="pullout-visual">
         <div class="cover-glow"></div>
         <div class="standing-book" id="standingBook"><div class="standing-book-back"></div><div class="standing-book-pages"></div><div class="standing-book-cover"><img id="pulledCover" src="assets/book-cover.jpg" alt="書籍封面" /></div></div>
-        <span class="stand-caption">FROM YOUR SHELF TO YOUR HANDS</span>
       </div>
       <div class="pullout-copy">
-        <span class="overline light-overline">A BOOK YOU'VE KEPT</span>
+        
         <h2 id="pulledTitle">也許你該找人聊聊</h2>
-        <p class="pullout-author" id="pulledAuthor">蘿蕊・葛利布</p>
-        <div class="pullout-divider" id="pulloutDivider" hidden></div>
+        <p class="english-book-title" id="pulledEnglishTitle"></p><p class="pullout-author" id="pulledAuthor">蘿蕊・葛利布</p>
+        <p class="english-book-author" id="pulledEnglishAuthor"></p><div class="pullout-divider" id="pulloutDivider" hidden></div>
         <p class="pullout-desc" id="pulledDesc" hidden></p><a id="pulledIntroSource" class="intro-source" target="_blank" rel="noopener noreferrer" hidden>簡介來源 ↗</a>
-        <form id="readYearForm" class="read-year-form"><label for="bookReadYear">閱讀年份</label><input id="bookReadYear" type="number" min="1900" max="9999" step="1" placeholder="未記錄" aria-describedby="readYearHint" /><button type="submit">儲存</button><small id="readYearHint">留白表示尚未記錄；儲存後會同步到雲端。</small></form>
         <button class="button button-gold open-reader-button" id="openReaderButton">翻開這本書 <span aria-hidden="true">↗</span></button>
         <button class="text-button" data-action="close-pullout">先放回書櫃</button>
       </div>
@@ -78,7 +76,7 @@
       <div class="reader-spread" id="readerSpread">
         <aside class="reader-toc-page">
           <div class="toc-top"><span class="overline">READING NOTEBOOK</span><span class="toc-flourish">✦</span></div>
-          <h2 class="toc-heading">一本書，<br /><em>兩種讀法。</em></h2>
+          <h2 class="toc-heading">閱讀筆記</h2>
           <p class="toc-explain" id="tocExplain">用你畫下的段落，重新拼起這本書的思考脈絡。</p>
           <div class="reader-tabs" role="tablist" aria-label="選擇閱讀方式">
             <button class="reader-tab active" id="themeTab" role="tab" aria-selected="true" data-mode="themes"><span>✳</span> 六大主題</button>
@@ -108,7 +106,6 @@
       <form id="addBookForm">
         <label for="newTitle">書名 <span>*</span></label><input id="newTitle" name="title" required maxlength="100" placeholder="例如：深度工作力" />
         <label for="newAuthor">作者</label><input id="newAuthor" name="author" maxlength="100" placeholder="作者姓名" />
-        <label for="newReadYear">閱讀年份 <small>選填，不是出版年</small></label><input id="newReadYear" name="readYear" type="number" min="1900" max="9999" step="1" placeholder="例如：2026；不確定可留白" />
         <label for="newCover">封面圖片網址 <small>選填</small></label><input id="newCover" name="cover" type="url" placeholder="https://..." />
         <p class="form-hint">新增書籍會公開保存到雲端，各裝置與朋友都看得到；目前不會自動生成新書摘要。</p>
         <button class="button button-gold full-button" type="submit">收藏到書櫃 <span>↗</span></button>
@@ -123,7 +120,7 @@
       <span class="overline">ABOUT THE SHELF</span>
       <h2 id="aboutTitle">一座慢慢長大的<br />私人書櫃。</h2>
       <p>這是整合個人筆記的書房版本。第一本《也許你該找人聊聊》的六大主題與逐章精華，來自你分享的畫線紀錄與前半段個人筆記，新增 10 張故事卡片，並非全書完整摘要。</p>
-      <p>只有書房擁有者登入後能新增書籍、修改閱讀年份；藏書公開保存在雲端，其他裝置與朋友重新開啟或更新頁面即可看到。若此裝置曾有本機藏書，登入後可以匯入。</p>
+      <p>只有書房擁有者登入後能新增書籍；藏書公開保存在雲端，其他裝置與朋友重新開啟或更新頁面即可看到。若此裝置曾有本機藏書，登入後可以匯入。</p>
       <p>實體比例參考：<a href="https://www.cite.com.tw/book?id=96913" target="_blank" rel="noopener noreferrer">2023 二版商品資料</a>（16 × 22.5 公分、464 頁）。目前書背為依黃色封面重排的模擬設計，非實拍；厚度暫估 3.2 公分。未提供尺寸的新藏書採預設比例。</p><p class="cover-credit">本書封面參考：<a href="https://www.cite.com.my/product_info.php?products_id=1357489" target="_blank" rel="noopener noreferrer">城邦閱讀花園</a></p>
       <button class="button button-gold full-button" data-action="close-about">繼續逛書櫃</button>
     </div>

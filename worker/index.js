@@ -13,7 +13,7 @@ export default {
     if(url.pathname==='/api/session'&&request.method==='GET')return json({canEdit:owner(request,env)},200,origin);
     if(url.pathname==='/api/library'&&request.method==='GET'){
      const result=await env.DB.prepare('SELECT id, data FROM library_books ORDER BY created_at, id').all();
-     return json({books:result.results.map(row=>JSON.parse(row.data))},200,origin);
+     const rows=result.results.map(row=>JSON.parse(row.data));return json({books:rows.filter(row=>row.id!=='__shelf_order'),order:rows.find(row=>row.id==='__shelf_order')?.order||[]},200,origin);
     }
     if(!owner(request,env))return json({error:'請先以書房擁有者帳號登入'},403);
     if(origin!==url.origin||!request.headers.get('content-type')?.startsWith('application/json'))return json({error:'Invalid request origin or content type'},403);
@@ -21,6 +21,11 @@ export default {
     const raw=await request.text();if(raw.length>12000)return json({error:'Request too large'},413);
     let body;try{body=JSON.parse(raw);}catch{return json({error:'Invalid JSON'},400);}
     if(!body||typeof body!=='object'||Array.isArray(body))return json({error:'Invalid data'},400);
+    if(url.pathname==='/api/order'&&request.method==='PUT'){
+     if(!Array.isArray(body.order)||body.order.length>1000||body.order.some(id=>typeof id!=='string'||!/^[a-zA-Z0-9-]{1,80}$/.test(id))||new Set(body.order).size!==body.order.length)return json({error:'排列資料不正確'},400);
+     const rows=await env.DB.prepare('SELECT id FROM library_books').all();const known=new Set([builtinId,...rows.results.map(row=>row.id)]);if(body.order.some(id=>!known.has(id)))return json({error:'排列包含未知的書籍'},400);
+     await env.DB.prepare('INSERT INTO library_books (id,data,created_at) VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data').bind('__shelf_order',JSON.stringify({id:'__shelf_order',order:body.order}),new Date().toISOString()).run();return json({order:body.order});
+    }
     if(url.pathname==='/api/books'&&request.method==='POST'){
      if(typeof body.title!=='string'||!body.title.trim()||body.title.length>100||typeof body.author!=='string'||body.author.length>100||!year(body.readYear))return json({error:'書名、作者或閱讀年份不正確'},400);
      const cover=validUrl(body.cover);if(cover===null)return json({error:'封面網址不正確'},400);

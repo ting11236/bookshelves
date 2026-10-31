@@ -15,3 +15,8 @@ response=await worker.fetch(new Request(origin+'/api/library',{headers:{origin:'
 assert.equal((await (await worker.fetch(new Request(origin+'/api/session'),env)).json()).canEdit,false);
 assert.equal((await (await worker.fetch(new Request(origin+'/api/session',{headers:auth}),env)).json()).canEdit,true);
 console.log('Cloud authorization, validation, CORS and create checks passed.');
+const validOrderReq=new Request(origin+'/api/order',{method:'PUT',headers:{...auth,origin,'content-type':'application/json'},body:JSON.stringify({order:['maybe-you-should-talk']})});
+assert.equal((await worker.fetch(validOrderReq,env)).status,200);
+const badOrderReq=new Request(origin+'/api/order',{method:'PUT',headers:{...auth,origin,'content-type':'application/json'},body:JSON.stringify({order:['not-a-real-book']})});
+assert.equal((await worker.fetch(badOrderReq,env)).status,400);
+console.log('Ordering authorization and unknown-book checks passed.');
