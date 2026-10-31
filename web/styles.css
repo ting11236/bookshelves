@@ -74,3 +74,7 @@ body{background:#f6f5f0;color:#30332d}.ambient-grain{background:radial-gradient(
 /* Cover boards use the spine color, without photographic side textures. */
 .book-side-left,.book-side-right,.book-bottom-face{background:var(--book-accent,#ded6c3);filter:none;opacity:1}
 .book-side-left img,.book-side-right img{display:none}
+
+/* Opaque solid boards on both sides; only the paper block is ivory. */
+.book-side-left,.book-side-right,.book-bottom-face{backface-visibility:visible;background:var(--book-accent,#ded6c3);opacity:1}
+.book-page-top{backface-visibility:visible;opacity:1;background-color:#e2ddce}
