@@ -245,7 +245,7 @@ function applyAccess(){
 }
 async function loadCloud(){
  applyAccess();
- try{const [data,session,catalog]=await Promise.all([cloudRequest('/api/library'),cloudRequest('/api/session'),fetch('books/catalog.json').then(r=>{if(!r.ok)throw Error();return r.json();})]);
+ try{const [data,session,catalog]=await Promise.all([cloudRequest('/api/library'),cloudRequest('/api/session'),fetch('books/catalog.json?v=20261101-covers2',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();})]);
  state.extras=data.books.filter(book=>book.id!==readingBook.id).map(book=>{const notes=catalog.find(x=>x.id===book.id);return notes?{...book,...notes,cover:notes.cover||book.cover,readYear:book.readYear}:book;});state.order=Array.isArray(data.order)?data.order:[];state.readYears={};
  for(const book of data.books)if(Object.hasOwn(book,'readYear'))state.readYears[book.id]=book.readYear;
  state.canEdit=session.canEdit;state.cloudReady=true;renderShelf();applyAccess();
