@@ -172,7 +172,7 @@
     "readYear": null,
     "heightMm": 210,
     "thicknessMm": 18,
-    "accent": "#d4e3e6",
+    "accent": "#bfe0df",
     "sourceTextPath": "books/control-source.txt",
     "noteSource": "https://unruly-colt-d91.notion.site/1b5bebc1299d8051996bd31d5c9a8529",
     "chaptersLabel": "筆記濃縮",
@@ -270,7 +270,8 @@
     ],
     "stories": [],
     "description": "有些控制不以命令出現，而是藏在關心、責備、依賴與忽冷忽熱之中，讓人不斷懷疑自己、努力討好，卻越來越疲憊。無力小芮介紹不同人格特徵與關係中的操控方式，討論這些互動帶來的感受、辨識線索與應對方向。全書從看清關係中的不對勁，走向尊重自身感受、建立界線與找回自己的聲音，協助讀者重新思考：哪些責任屬於自己，哪些要求不必再無限承擔。",
-    "synopsisSource": "https://www.eslite.com/product/10072302132682849708002"
+    "synopsisSource": "https://www.eslite.com/product/10072302132682849708002",
+    "cover": "assets/control-cover.jpg"
   },
   {
     "id": "bc1283f1-cae6-425a-a4ab-85892f2ecffe",
@@ -768,7 +769,7 @@
     "readYear": null,
     "heightMm": 210,
     "thicknessMm": 21,
-    "accent": "#c9d4cc",
+    "accent": "#f2eee6",
     "sourceTextPath": "books/geopolitics-source.txt",
     "noteSource": "https://unruly-colt-d91.notion.site/cb3e6d19abdf49f692f9c973ebf6a9e4",
     "chaptersLabel": "筆記濃縮",
@@ -844,7 +845,8 @@
     ],
     "stories": [],
     "description": "國家的位置、海陸條件與資源分布，如何影響安全、貿易與外交選擇？本書以漫畫、地圖與圖表介紹地緣政治的基本概念，再走進日本、美國、中國、俄國、英國與歐洲、印度與東南亞，以及中東等地區，理解各國面對的限制與生存策略。內容把國際角力連回能源、糧食、原物料與運輸等日常議題，提供一套閱讀新聞的空間視角，幫助讀者把零散事件放回較完整的世界脈絡。",
-    "synopsisSource": "https://www.nlpi.edu.tw/BookSelectors/librarian-recommendations/b4280f25-a98d-45e2-b1c5-49f6d0c13c73"
+    "synopsisSource": "https://www.nlpi.edu.tw/BookSelectors/librarian-recommendations/b4280f25-a98d-45e2-b1c5-49f6d0c13c73",
+    "cover": "assets/geopolitics-cover.jpg"
   },
   {
     "id": "c57f3a56-58fd-4483-a2a3-1f723272e91d",
@@ -1029,7 +1031,7 @@
     "readYear": null,
     "heightMm": 210,
     "thicknessMm": 20,
-    "accent": "#e7cf65",
+    "accent": "#f3f0e8",
     "sourceTextPath": "books/story-source.txt",
     "noteSource": "https://unruly-colt-d91.notion.site/2a63cc9adb4a42e58916625a636fc5ef",
     "chaptersLabel": "筆記濃縮",
@@ -1105,6 +1107,7 @@
     ],
     "stories": [],
     "description": "如果暫時放下「我現在做不到」的限制，把自己當成人生故事的主角，接下來會怎麼行動？古川健介提出以故事設計人生的方法：先鬆開思考枷鎖，描繪想成為的角色，再讓角色採取行動、走進合適的環境，推動故事發展。重點不只在設定遙遠成果，也在透過角色與情境改變當下的選擇，讓原本被失敗經驗或自我評價卡住的人，找到可以開始嘗試的一步，享受逐漸展開的過程。",
-    "synopsisSource": "https://www.eslite.com/product/10012020052682814451001"
+    "synopsisSource": "https://www.eslite.com/product/10012020052682814451001",
+    "cover": "assets/story-cover.jpg"
   }
 ]
