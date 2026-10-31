@@ -128,7 +128,7 @@ function renderShelf(){
     const edge=document.createElement('span');edge.className='book-cover-edge';edge.setAttribute('aria-hidden','true');spine.append(edge);
     spine.dataset.bookId=book.id;spine.draggable=false;spine.dataset.canReorder=String(state.canEdit);spine.style.setProperty('--author-chars',String((book.author||'私人藏書').length));
     for(const cls of ['spine-rule-top','spine-rule-bottom','book-page-top','book-bottom-face']){const face=document.createElement('span');face.className=cls;face.setAttribute('aria-hidden','true');spine.append(face);}
-    for(const cls of ['book-side-left','book-side-right']){const face=document.createElement('span');face.className=cls;face.setAttribute('aria-hidden','true');face.style.backgroundColor=book.accent||'#b5a081';if(book.cover){const image=document.createElement('img');image.alt='';image.src=book.cover;image.loading='lazy';image.onerror=()=>image.hidden=true;face.append(image);}spine.append(face);}
+    for(const cls of ['book-side-left','book-side-right']){const face=document.createElement('span');face.className=cls;face.setAttribute('aria-hidden','true');face.style.backgroundColor=book.accent||'#b5a081';spine.append(face);}
     spine.addEventListener('click',()=>{if(Date.now()<state.suppressedClick)return;openPullout(book);});
     if(state.canEdit)attachBookReorder(spine);shelf.append(spine);
   });

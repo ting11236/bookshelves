@@ -70,3 +70,7 @@ body{background:#f6f5f0;color:#30332d}.ambient-grain{background:radial-gradient(
 .shelf-book[data-can-reorder="true"]{cursor:grab}.shelf-book[data-can-reorder="true"]:active{cursor:grabbing}
 /* Solid book volume: no wall color bleeding through paper or cover faces. */
 .book-side-left,.book-side-right{opacity:1;filter:none;background-color:var(--book-accent,#ded6c3);backface-visibility:hidden;border:1px solid #00000016}.book-side-left img,.book-side-right img{opacity:1;background-color:var(--book-accent,#ded6c3);mix-blend-mode:normal}.book-page-top{opacity:1;background-color:#e2ddce;background-image:repeating-linear-gradient(0deg,#cbc4b3 0 1px,#e5dfd0 1px 3px);border-color:#b8ad97;box-shadow:none}.shelf-book:not(.is-dragging){opacity:1}.book-bottom-face{position:absolute;left:0;right:0;top:100%;height:calc(52px*var(--spine-scale));transform-origin:top center;transform:rotateX(-90deg);background:var(--book-accent,#ded6c3);border:1px solid #00000016;opacity:1;pointer-events:none}
+
+/* Cover boards use the spine color, without photographic side textures. */
+.book-side-left,.book-side-right,.book-bottom-face{background:var(--book-accent,#ded6c3);filter:none;opacity:1}
+.book-side-left img,.book-side-right img{display:none}
